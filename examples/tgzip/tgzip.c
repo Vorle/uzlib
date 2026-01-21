@@ -97,7 +97,14 @@ int main(int argc, char *argv[])
 
     printf("compressed to %u raw bytes\n", comp.outlen);
 
+    unsigned crc = ~uzlib_crc32(source, len, ~0);
+
     /* -- write output -- */
+
+    // NOTE: Originally, the gzip footer has CRC first, then length.
+    // Now, we added it in the header, with length first. This way, it's easier to process streams.
+    fwrite(&len, sizeof(len), 1, fout);
+    fwrite(&crc, sizeof(crc), 1, fout);
 
     putc(0x1f, fout);
     putc(0x8b, fout);
@@ -110,9 +117,8 @@ int main(int argc, char *argv[])
 
     fwrite(comp.outbuf, 1, comp.outlen, fout);
 
-    unsigned crc = ~uzlib_crc32(source, len, ~0);
-    fwrite(&crc, sizeof(crc), 1, fout);
-    fwrite(&len, sizeof(len), 1, fout);
+/*    fwrite(&crc, sizeof(crc), 1, fout);*/
+/*    fwrite(&len, sizeof(len), 1, fout);*/
 
     fclose(fout);
 

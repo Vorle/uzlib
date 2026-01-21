@@ -70,6 +70,7 @@ extern "C" {
 #define TINF_CHKSUM_NONE  0
 #define TINF_CHKSUM_ADLER 1
 #define TINF_CHKSUM_CRC   2
+#define TINF_CHKSUM_CRC32 3
 
 /* helper macros */
 #define TINF_ARRAY_SIZE(arr) (sizeof(arr) / sizeof(*(arr)))
@@ -103,6 +104,8 @@ struct uzlib_uncomp {
     /* Pointer past the end of the dest buffer, similar to source_limit */
     unsigned char *dest_limit;
 
+    /* Header informed checksum (MODIFIED) */
+    unsigned int header_checksum;
     /* Accumulating checksum */
     unsigned int checksum;
     char checksum_type;

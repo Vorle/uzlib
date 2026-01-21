@@ -660,8 +660,7 @@ int uzlib_uncompress_chksum(TINF_DATA *d)
             break;
 
         case TINF_CHKSUM_CRC:
-            val = tinf_get_le_uint32(d);
-            if (~d->checksum != val) {
+            if (~d->checksum != d->header_checksum) {
                 return TINF_CHKSUM_ERROR;
             }
             // Uncompressed size. TODO: Check

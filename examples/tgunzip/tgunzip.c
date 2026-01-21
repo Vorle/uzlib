@@ -53,7 +53,7 @@ void exit_error(const char *what)
 int main(int argc, char *argv[])
 {
     FILE *fin, *fout;
-    unsigned int len, dlen, outlen;
+    unsigned int len, dlen, outlen, file_crc32;
     const unsigned char *source;
     unsigned char *dest;
     int res;
@@ -96,17 +96,24 @@ int main(int argc, char *argv[])
 
     fclose(fin);
 
-    if (len < 4) exit_error("file too small");
+    if (len < 8) exit_error("file too small");
 
     /* -- extract decompressed length from gzip trailer -- */
 
-    /* Read 32-bit uncompressed size from last 4 bytes (little-endian) */
-    dlen =            source[len - 1];
-    dlen = 256*dlen + source[len - 2];
-    dlen = 256*dlen + source[len - 3];
-    dlen = 256*dlen + source[len - 4];
-
+    /* Read 32-bit uncompressed size from first 4 bytes (little-endian) */
+    dlen =            source[3];
+    dlen = 256*dlen + source[2];
+    dlen = 256*dlen + source[1];
+    dlen = 256*dlen + source[0];
     printf("decompressed length: %u bytes\n", dlen);
+
+    // Read 32bit CRC32 from next 4 bytes (not used here)
+    file_crc32 =            source[7];
+    file_crc32 = 256*file_crc32 + source[6];
+    file_crc32 = 256*file_crc32 + source[5];
+    file_crc32 = 256*file_crc32 + source[4];
+
+    printf("decompressed crc: %u bytes\n", file_crc32);
 
     outlen = dlen;
 
@@ -127,9 +134,10 @@ int main(int argc, char *argv[])
     uzlib_uncompress_init(&d, NULL, 0);
 
     /* Configure input source (all 3 fields must be set by caller) */
-    d.source = source;                      /* Start of compressed data */
-    d.source_limit = source + len - 4;      /* End before 4-byte trailer */
+    d.source = &source[8];                      /* Start of compressed data (8 bytes offset)*/
+    d.source_limit = &source[8] + len - 8;      /* End */
     d.source_read_cb = NULL;                /* No callback for additional input */
+    d.header_checksum = file_crc32;          /* Expected header checksum from trailer */
 
     /* Parse and validate gzip header */
     res = uzlib_gzip_parse_header(&d);
