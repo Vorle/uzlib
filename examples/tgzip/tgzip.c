@@ -104,16 +104,16 @@ int main(int argc, char *argv[])
     // NOTE: Originally, the gzip footer has CRC first, then length.
     // Now, we added it in the header, with length first. This way, it's easier to process streams.
     fwrite(&len, sizeof(len), 1, fout);
-    fwrite(&crc, sizeof(crc), 1, fout);
 
     putc(0x1f, fout);
     putc(0x8b, fout);
     putc(0x08, fout);
-    putc(0x00, fout); // FLG
+    putc(32, fout); // FLG : CRC32 in header
     int mtime = 0;
     fwrite(&mtime, sizeof(mtime), 1, fout);
     putc(0x04, fout); // XFL
     putc(0x03, fout); // OS
+    fwrite(&crc, sizeof(crc), 1, fout);
 
     fwrite(comp.outbuf, 1, comp.outlen, fout);
 

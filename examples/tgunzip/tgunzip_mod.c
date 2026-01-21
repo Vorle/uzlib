@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 
     fclose(fin);
 
-    if (len < 8) exit_error("file too small");
+    if (len < 4) exit_error("file too small");
 
     /* -- extract decompressed length from gzip trailer -- */
 
@@ -106,14 +106,6 @@ int main(int argc, char *argv[])
     dlen = 256*dlen + source[1];
     dlen = 256*dlen + source[0];
     printf("decompressed length: %u bytes\n", dlen);
-
-    // Read 32bit CRC32 from next 4 bytes (not used here)
-    file_crc32 =            source[7];
-    file_crc32 = 256*file_crc32 + source[6];
-    file_crc32 = 256*file_crc32 + source[5];
-    file_crc32 = 256*file_crc32 + source[4];
-
-    printf("decompressed crc: %u bytes\n", file_crc32);
 
     outlen = dlen;
 
@@ -137,7 +129,6 @@ int main(int argc, char *argv[])
     d.source = &source[4];                      /* Start of compressed data (8 bytes offset)*/
     d.source_limit = &source[4] + len - 4;      /* End */
     d.source_read_cb = NULL;                /* No callback for additional input */
-    d.header_checksum = file_crc32;          /* Expected header checksum from trailer */
 
     /* Parse and validate gzip header */
     res = uzlib_gzip_parse_header(&d);
@@ -151,10 +142,11 @@ int main(int argc, char *argv[])
 
     // Save original d.dest to calculate only offsets
     uint64_t dest_orig = (uint64_t)d.dest;
+    uint64_t source_orig = (uint64_t)d.source;
 
     /* Decompress data in chunks */
     while (dlen) {
-        printf("Start dest and dest_limit: %X %X\n", d.dest-dest_orig, d.dest_limit-dest_orig);
+        printf("Start dest, dest_limit and source: %X %X\n", d.dest-dest_orig, d.dest_limit-dest_orig, d.source - source_orig);
         /* Process min(remaining bytes, chunk size) */
         unsigned int chunk_len = dlen < OUT_CHUNK_SIZE ? dlen : OUT_CHUNK_SIZE;
         d.dest_limit = d.dest + chunk_len;
@@ -163,7 +155,7 @@ int main(int argc, char *argv[])
         if (res != TINF_OK) {
             break;
         }
-        printf("end dest and dest_limit: %X %X\n", d.dest-dest_orig, d.dest_limit-dest_orig);
+        printf("End dest, dest_limit and source: %X %X\n", d.dest-dest_orig, d.dest_limit-dest_orig, d.source - source_orig);
     }
 
     /* Verify decompression completed successfully */
