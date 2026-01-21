@@ -156,6 +156,8 @@ struct uzlib_comp {
     unsigned int dict_size;
 };
 
+void TINFCC uzlib_compress(struct uzlib_comp *c, const uint8_t *src, unsigned slen);
+
 #include "defl_static.h"
 
 /* Checksum API */

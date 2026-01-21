@@ -93,3 +93,32 @@ static inline void copy(void *data, unsigned offset, unsigned len)
 }
 
 #endif
+
+
+void uzlib_compress(struct uzlib_comp *data, const uint8_t *src, unsigned slen)
+{
+    const uint8_t *top = src + slen - MIN_MATCH;
+    while (src < top) {
+        int h = HASH(data, src);
+        const uint8_t **bucket = &data->hash_table[h & (HASH_SIZE - 1)];
+        const uint8_t *subs = *bucket;
+        *bucket = src;
+        if (subs && src > subs && (src - subs) <= MAX_OFFSET && !memcmp(src, subs, MIN_MATCH)) {
+            src += MIN_MATCH;
+            const uint8_t *m = subs + MIN_MATCH;
+            int len = MIN_MATCH;
+            while (*src == *m && len < MAX_MATCH && src < top) {
+                src++; m++; len++;
+            }
+            copy(data, src - len - subs, len);
+        } else {
+            literal(data, *src++);
+        }
+    }
+    // Process buffer tail, which is less than MIN_MATCH
+    // (and so it doesn't make sense to look for matches there)
+    top += MIN_MATCH;
+    while (src < top) {
+        literal(data, *src++);
+    }
+}

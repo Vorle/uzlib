@@ -14,7 +14,7 @@ objects = tinflate.o tinfgzip.o tinfzlib.o crc32.o \
     defl_static.o genlz77.o
 
 COPT    = -Os
-CFLAGS  = -Wall $(COPT) -fdump-rtl-expand
+CFLAGS  = -Wall $(COPT)
 LDFLAGS = $(CFLAGS) -s
 
 .PHONY: all clean

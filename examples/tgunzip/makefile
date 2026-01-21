@@ -14,7 +14,7 @@ objects = tgunzip.o
 libs    = ../../lib/libtinf.a
 
 COPT    = -Os
-CFLAGS  = -Wall -I../../src $(COPT) -fdump-rtl-expand
+CFLAGS  = -Wall -I../../src $(COPT)
 LDFLAGS = $(CFLAGS) -s -Wl,-Map,ld.map
 
 .PHONY: all clean
