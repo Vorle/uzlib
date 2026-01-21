@@ -10,8 +10,7 @@
 ##
 
 target  = ../lib/libtinf.a
-objects = tinflate.o tinfgzip.o tinfzlib.o crc32.o \
-    defl_static.o genlz77.o
+objects = tinflate.o tinfgzip.o tinfzlib.o crc32.o
 
 COPT    = -Os
 CFLAGS  = -Wall $(COPT) -fdump-rtl-expand
