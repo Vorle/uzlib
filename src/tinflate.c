@@ -639,7 +639,7 @@ int uzlib_uncompress_chksum(TINF_DATA *d)
     switch (d->checksum_type) {
 
     case TINF_CHKSUM_ADLER:
-        d->checksum = uzlib_adler32(data, d->dest - data, d->checksum);
+        return TINF_UNSOPPORTED_ADLER;
         break;
 
     case TINF_CHKSUM_CRC:

@@ -64,6 +64,7 @@ extern "C" {
 #define TINF_DATA_ERROR    (-3)
 #define TINF_CHKSUM_ERROR  (-4)
 #define TINF_DICT_ERROR    (-5)
+#define TINF_UNSOPPORTED_ADLER (-6)
 
 /* checksum types */
 #define TINF_CHKSUM_NONE  0
@@ -160,9 +161,6 @@ void TINFCC uzlib_compress(struct uzlib_comp *c, const uint8_t *src, unsigned sl
 #include "defl_static.h"
 
 /* Checksum API */
-
-/* prev_sum is previous value for incremental computation, 1 initially */
-uint32_t TINFCC uzlib_adler32(const void *data, unsigned int length, uint32_t prev_sum);
 /* crc is previous value for incremental computation, 0xffffffff initially */
 uint32_t TINFCC uzlib_crc32(const void *data, unsigned int length, uint32_t crc);
 
